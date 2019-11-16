@@ -8,12 +8,12 @@ also using slightly updated lightPage.html as the main page.
 """
 
 from flask import Flask, render_template, flash, request, sessions, abort
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import time
 import random
 import threading
 
-# from LightThread2 import * 
+from LightThread2 import * 
 
 ########################################################################
 #								Setup
@@ -36,7 +36,7 @@ def get_cmd():
 
 
 # Create light thread
-# lt = LightThread() # from LightThread2 (updated)
+lt = LightThread() # from LightThread2 (updated)
 
 
 ########################################################################
@@ -67,6 +67,12 @@ def light_controls():
 	# 	lt.set_green(int(cmd[2:]))
 	# elif cmd[0:2] == "B:":
 	# 	 lt.set_blue(int(cmd[2:]))
+	
+	if cmd[0:6] == "Color:":
+		# Parse the color code
+		
+		# Send to lights
+		lt.to_code(r, g, b)
 
 	
 			

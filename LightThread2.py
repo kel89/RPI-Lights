@@ -286,6 +286,27 @@ class LightThread(threading.Thread):
 		self.set_green(vals[1], keep_jumping, keep_fading)
 		self.set_blue(vals[2], keep_jumping, keep_fading)
 		
+	def to_rgb(self, r, g, b, keep_jumping=False, keep_fading=False):
+		"""
+		Changes colors to an rgb code
+		"""
+		# If this change is not associated with a jump change
+		if (not keep_jumping) and (self.jump is True):
+			# Stop jumping
+			self.jump = False 
+
+		# If this change is not associated with a fade change
+		if (not keep_fading) and (self.fade is True):
+			# Stop fading 
+			print("Flipping fade switch")
+			self.fade = False
+
+		# Change color
+		vals = self.COLORS[color]
+		self.set_red(r, keep_jumping, keep_fading)
+		self.set_green(g, keep_jumping, keep_fading)
+		self.set_blue(b, keep_jumping, keep_fading)
+		
 	def set_speed(self, new_speed):
 		"""
 		Updates the speed parameter
