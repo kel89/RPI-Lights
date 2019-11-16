@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Lights</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset='utf-8'>
+
+	<!-- Jquery -->
+	<!--
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script>window.jQuery || document.write(
+		'<script src="{{url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+	-->
+
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+	<!-- jQuery library --> <!--This one is for bootstrap, test it with other -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js">
+	</script>
+
+	<!-- d3 v5 -->
+	<script src="https://d3js.org/d3.v5.min.js"></script>
+
+	<!-- d3 simple slider -->
+	<script src="https://unpkg.com/d3-simple-slider"></script>
+
+	<!-- My scripts -->
+	<script src='ColorWheel.js'></script>
+	<!-- <script src='ColorSliders.js'></script> -->
+	<!-- <script src='Slider.js'></script> -->
+
+	<!-- Very important, little js script to send command via Jquery GET -->
+	<script>
+	function sendCommand(command) {
+		$.get("/", {"command":command})
+	}
+	</script>
+
+	<style>
+	.navbar-header{
+		background: #5680E9;
+		font-color: white;
+	}
+
+	.navbar a {
+		color: white;
+	}
+
+	.icon-bar {
+		background: white;
+	}
+
+	.navbar-toggle{
+		border: 1px solid white;
+		border-radius: 2px;
+	}
+
+	.navbar li {
+		background-color: #ddd;
+	}
+
+
+	/* Raw D3 Slider */
+	.ticks {
+		font: 10px sans-serif;
+	}
+
+	.track,
+	.track-inset,
+	.track-overlay {
+		stroke-linecap: round;
+	}
+
+	.track {
+		stroke: #000;
+		stroke-opacity: 0.3;
+		stroke-width: 10px;
+	}
+
+	.track-inset {
+		stroke: #ddd;
+		stroke-width: 8px;
+	}
+
+	.track-overlay {
+		pointer-events: stroke;
+		stroke-width: 50px;
+		stroke: transparent;
+		cursor: crosshair;
+	}
+
+	.handle {
+		fill: #fff;
+		stroke: #000;
+		stroke-opacity: 0.5;
+	}
+
+	</style>
+
+</head>
+
+<body>
+<!-- Nav Bar -->
+<nav class="navbar">
+  <div class="container-fluid">
+	<div class="navbar-header">
+		<!-- Menu Button -->
+	  	<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span> 
+	  	</button>
+
+		<a class="navbar-brand" href="#">Home Controller</a>
+
+	</div>
+	<div class="collapse navbar-collapse" id="myNavbar" style='border-top: none;'>
+	  <ul class="nav navbar-nav">
+		<li><a href="#">Lights</a></li>
+	  </ul>
+	</div>
+  </div>
+</nav>
+
+<!-- Page Body -->
+<div class='container-fluid' id="pageBody">
+
+	<!-- Color grid -->
+	<div class='row' id='colorGridDiv'>
+	</div>
+
+	<!-- Sliders -->
+	<div class='row' id='slidersDiv'>
+		<br>
+		<br>
+		<div class='row' id='redSlider' style='height:100px'></div>
+		<div class='row' id='greenSlider' style='height:100px'></div>
+		<div class='row' id='blueSlider' style='height:100px'></div>
+	</div>
+
+	<!-- Speed and brightness -->
+	<div class='row' id='sliders2Div'>
+	</div>
+
+	<!-- Buttons -->
+	<div class='row' id='buttonsDiv'>
+	</div>
+
+</div>
+
+<script>
+// Create the color wheel
+let cw = new ColorWheel({targetID:"colorGridDiv"});
+
+// let colorSliders = new ColorSliders({targetID:"slidersDiv", displayID: "centerColorCircle"})
+let redSlider = new Slider({targetId:'redSlider', fillColor:'red', widgetName:'redSlider', handleRadius:20, trackThickness:15});
+let greenSlider = new Slider({targetId:'greenSlider', fillColor:'green', widgetName:'greenSlider', handleRadius:20, trackThickness:15});
+let blueSlider = new Slider({targetId:'blueSlider', fillColor:'blue', widgetName:'blueSlider', handleRadius:20, trackThickness:15});
+
+
+</script>
+
+</body>
+</html>
