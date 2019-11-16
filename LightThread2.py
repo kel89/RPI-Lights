@@ -51,60 +51,101 @@ two colors, and it will use the `speed` attribute;
 
 """
 
-"""
-Proposed Fields:
-	+ rPwr
-	+ gPwr
-	+ bPwr (the above from 0 to 100, integer?) these are ONLY to be changed in ultimate changer
-	+ rSet
-	+ gSet
-	+ bSet - these are teh RGB 0 to 256 settings for the light, these do not consider dimmer
-	+ COLORS - dictionary mapping color names (str) to [r,g,b] values
-	+ dim - controls brightness, serves as overall multiplier
-	+ jump - boolean, serves as kill switch for light jumping
-	+ spped - [0,1] multiplier controls speed of jumping and fading
-"""
 
 import RPi.GPIO as GPIO
+import pigpio # superior as uses better timing (no flicker)
 import time
 import random
 import threading
 
 class LightThread(threading.Thread):
 	"""
-	Put Full description here
+	Fields
+	------
+	rPwr - [0,100] controlls power of red light
+	gPwr - ^^ green
+	bPwr - ^^ blue
+	rSet - [0, 255] indicates current setting of red light
+	gSet - ^^ green
+	bSet - ^^ blue
+	COLORS - Dictionary mapping string color names to [R, G, B]
+	ORDERED_COLORS - list of color names ordered for fading
+	dim - dim setting [0,1] (brightness)
+	jump - Boolean, True if should be jumping
+	fade - Boolean, True if should be fading
+	speed - [0,1] denotes how fast should be fading/jumping
 	"""
 
 	def __init__(self):
-		# Setup GPIO:
-		# define pin numbers as constants
+		# Super class init
+		threading.Thread.__init__(self)
+		
+		# GPIO initialization
+		self.RPIN = 18
+		self.GPIN = 23
+		self.BPIN = 24
 
-		# Set pins as out
-		# Set frequency for pins
-		# Start lights at 0 (off)
+		# Setup GPIO
+		#GPIO.setmode(GPIO.BCM)
+		#GPIO.setup(RPIN, GPIO.OUT)
+		#GPIO.setup(GPIN, GPIO.OUT)
+		#GPIO.setup(BPIN, GPIO.OUT)
+		self.pi = pigpio.pi()
 
-		"""
-		Note, here we have the following fields:
-			rPwr
-			gPwf
-			bPwr
-		These are the powers for the lights of each color, range from
-		0 to 100
-		"""
+		## Set frequency
+		#self.rPwr = GPIO.PWM(RPIN, 300)
+		#self.bPwr = GPIO.PWM(BPIN, 300)
+		#self.gPwr = GPIO.PWM(GPIN, 300)
+
+		## Start lights off
+		#self.rPwr.start(0)
+		#self.bPwr.start(0)
+		#self.gPwr.start(0)
+		
+		# set colors to 0 to start
+		self.pi.set_PWM_dutycycle(self.RPIN, 0)
+		self.pi.set_PWM_dutycycle(self.GPIN, 0)
+		self.pi.set_PWM_dutycycle(self.BPIN, 0)
+
+		# Initialize 0-255 light attributes
+		self.rSet = 0
+		self.gSet = 0
+		self.bSet = 0
 
 		# Define the color dictionary: COLORS
 		# Note: we want to match this to the html file for the page
+		self.COLORS = {
+			"blue" : [0,0,255],
+			"red" : [255, 0, 0],
+			"green" : [0, 255, 0],
+			"yellow" : [255, 255, 0],
+			"orange" : [255, 13, 0],
+			"purple" : [138, 43, 226],
+			"pink" : [255, 0, 200],
+			"springgreen" : [0, 255, 127],
+			"turquoise" : [64, 224, 208],
+			"off" : [0,0,0]
+		}
 
 		# Define the order colored names: ORDERED_COLORS
 		# this is used for the fading, to go from color to color in order
+		self.ORDERED_COLORS = [
+			"blue", "turquoise", "springgreen", "green",
+			"yellow", "red", "pink", "purple"
+		]
+		
+		# For test with smaller set of colors
+		# self.ORDERED_COLORS = ["red", "pink", "blue"]
 
 		# define dimming constrol
 		# initiliaze to 0.75
+		self.dim = 0.75
 
 		# initliaze for jump and fade
-		jump = False
-		fade = False
-		speed = 0.5 # play with this <----------
+		self.jump = False
+		self.fade = False
+		self.speed = 0.5 # play with this <----------
+		self.last_jump = None # color of last jump
 
 	def set_red(self, r, keep_jumping=False, keep_fading=False):
 		"""
@@ -113,44 +154,146 @@ class LightThread(threading.Thread):
 		Parameters
 		----------
 		`r` - is the [0,256] RGB value for the red component
+		keep_jumping - Boolean denoting if this setting is part of jump
+		keep_jumping - ^^ for fade
 		"""
-		# if not keep_jumping and jump is True
-		# set jump to false (flip the switch)
+		# If this change is not associated with a jump change
+		if (not keep_jumping) and (self.jump is True):
+			# Stop jumping
+			self.jump = False 
 
-		# do the same as above for fading
-
+		# If this change is not associated with a fade change
+		if (not keep_fading) and (self.fade is True):
+			print("flipping fade switch in red")
+			# Stop fading
+			self.fade = False
 
 		# save r as rSet (as still RGB number)
-		# make [0,100] with (r/255)*100
-		# make rPwr = dim*^^val
-	# ^^Do this for all the colors
+		self.rSet = r
 
+		# map [0,100] -> [0,255]
+		#rgb_val = int((r/255)*100)
+		
+		# Set light power (including dimmer)
+		#self.rPwr.ChangeDutyCycle(self.dim*rgb_val)
+		
+		# Change red duty cycle
+		self.pi.set_PWM_dutycycle(self.RPIN, self.dim*r)
+		
+	def set_green(self, g, keep_jumping=False, keep_fading=False):
+		"""
+		Changes the red color -- Ultimate function
+
+		Parameters
+		----------
+		`r` - is the [0,256] RGB value for the red component
+		keep_jumping - Boolean denoting if this setting is part of jump
+		keep_jumping - ^^ for fade
+		"""
+
+		# If this change is not associated with a jump change
+		if (not keep_jumping) and (self.jump is True):
+			# Stop jumping
+			self.jump = False 
+
+		# If this change is not associated with a fade change
+		if (not keep_fading) and (self.fade is True):
+			print("flipping fade switch in green")
+			# Stop fading
+			self.fade = False
+
+		# save r as rSet (as still RGB number)
+		self.gSet = g
+
+		# map [0,100] -> [0,255]
+		#rgb_val = int((g/255)*100)
+		
+		# Set light power (including dimmer)
+		#self.gPwr.ChangeDutyCycle(self.dim*rgb_val)
+		
+		# Set green duty cycle
+		self.pi.set_PWM_dutycycle(self.GPIN, self.dim*g)
+
+	
+	def set_blue(self, b, keep_jumping=False, keep_fading=False):
+		"""
+		Changes the red color -- Ultimate function
+
+		Parameters
+		----------
+		`b` - is the [0,256] RGB value for the red component
+		keep_jumping - Boolean denoting if this setting is part of jump
+		keep_jumping - ^^ for fade
+		"""
+
+		# If this change is not associated with a jump change
+		if (not keep_jumping) and (self.jump is True):
+			# Stop jumping
+			self.jump = False 
+
+		# If this change is not associated with a fade change
+		if (not keep_fading) and (self.fade is True):
+			print("flipping fade switch in blue")
+			# Stop fading
+			self.fade = False
+
+		# save r as rSet (as still RGB number)
+		self.bSet = b
+
+		# map [0,100] -> [0,255]
+		#rgb_val = int((b/255)*100)
+		
+		# Set light power (including dimmer)
+		#self.bPwr.ChangeDutyCycle(self.dim*rgb_val)
+		
+		# Set blue duty cycle
+		self.pi.set_PWM_dutycycle(self.BPIN, self.dim*b)
+		
+		
 	def set_dim(self, new_dim):
 		"""
 		Updates the new dim settings, which requires updating the current colors
 		"""
-		# dim = new_dim (update value)
+		# update value
+		self.dim = new_dim
+		
 		# update colors to reflect this:
-		# self.set_red(self.rSet) # i.e. setting it to current value,
-		# however note that this time it will have a new dim
-		# Do this for all the colors
+		self.set_red(self.rSet)
+		self.set_green(self.gSet)
+		self.set_blue(self.bSet)
 
 	def to_color(self, color, keep_jumping=False, keep_fading=False):
 		"""
 		Changes the lights to `color`, where `color` is a string
 		that *Must* be in COLORS
 		"""
-		# if not keep_jumping AND jump is True
-		# i.e. we don't want to keep jumping but we currently are
-		# set jump to false
+		# print("at top of to_color, keep_fading is", keep_fading, "and fade is", self.fade)
+		
+		# If this change is not associated with a jump change
+		if (not keep_jumping) and (self.jump is True):
+			# Stop jumping
+			self.jump = False 
 
-		# do the same as above for fading
+		# If this change is not associated with a fade change
+		if (not keep_fading) and (self.fade is True):
+			# Stop fading 
+			print("Flipping fade switch")
+			self.fade = False
 
-		# Check that color is acceptable, if not...just print?
+		# Change color
 		vals = self.COLORS[color]
-		self.set_red(vals[0], keep_jumping)
-		self.set_green(vals[1], keep_jumping)
-		self.set_blue(vals[2], keep_jumping)
+		self.set_red(vals[0], keep_jumping, keep_fading)
+		self.set_green(vals[1], keep_jumping, keep_fading)
+		self.set_blue(vals[2], keep_jumping, keep_fading)
+		
+	def set_speed(self, new_speed):
+		"""
+		Updates the speed parameter
+		"""
+		if 0 <= new_speed and new_speed <= 1:
+			self.speed = float(new_speed)
+		else:
+			print("New speed value is not in [0,1]")
 
 	def start_jump(self):
 		"""
@@ -160,14 +303,24 @@ class LightThread(threading.Thread):
 		"""
 
 		# set swtich to on
-		jump = True
-		fade = False
+		self.jump = True
+		self.fade = False
 
 		# Start jumping loop
-		while jump:
+		while self.jump:
 			# choose a random color from the dictionary
+			new_color = random.choice(list(self.COLORS.keys()))
+			
+			# Make sure not going to 'off'
+			while new_color == "off" or new_color == self.last_jump:
+				new_color = random.choice(list(self.COLORS.keys()))
+			
 			# change to that color with to_color (with keep_jumping=True)
-			# wait according to the speed timer <-------------- requires tweaking
+			self.to_color(new_color, keep_jumping=True)
+			self.last_jump = new_color
+			
+			# Pause based on speed parameter
+			time.sleep(.2/self.speed) # so 1 second pause with default speed=2
 
 
 	def stop_jump_and_fade(self):
@@ -179,8 +332,9 @@ class LightThread(threading.Thread):
 		"""
 
 		# flip the jump switch
-		jump = False 
-		fade = False
+		self.jump = False 
+		self.fade = False
+		self.last_jump = None
 
 		# Now get the current color, in RGB form and return it as a dictionary
 		# so that it can be sent JQURY style to update the sliders
@@ -190,10 +344,12 @@ class LightThread(threading.Thread):
 			"blue":str(self.bSet)
 		}
 		return current
+		# TODO-----------------------------------------------------------
 		# Note, this will require the html/js to be updated so that the jump
 		# button is bound to a getJSON
+		
 
-	def fade_between(c1, c2):
+	def fade_between(self, c1, c2):
 		"""
 		Takes in c1 and c2, which are strings, these must correspond to colors
 		in the COLORS dictionary, i.e. COLORS[c1] will return a list of 
@@ -204,26 +360,34 @@ class LightThread(threading.Thread):
 		"""
 
 		# ensure at correct starting point
-		self.to_color(c1)
+		self.to_color(c1, keep_fading=True)
 
 		# find max number of steps
 		r_steps = self.COLORS[c2][0] - self.COLORS[c1][0]
+		# print("red steps:", r_steps)
 		g_steps = self.COLORS[c2][1] - self.COLORS[c1][1]
+		# print("green steps:", g_steps)
 		b_steps = self.COLORS[c2][2] - self.COLORS[c1][2]
-		max_steps = max(r_steps, g_steps, b_steps)
+		# print("blue_steps:", b_steps)
+		max_steps = max(max(abs(r_steps), abs(g_steps), abs(b_steps)), 1) # no division by 0 later
+		# print("Max steps are:", max_steps)
 
 		# get time between each step
-		time_between = (10/max_steps)*(2*self.speed) # gives 10 seconds per fade
-		# when speed = 0.5. Therefore can tweak 10 and 2 in tuning for looks
+		time_between = (10/max_steps)*(.1/self.speed) # gives 10 seconds per fade
+		# print("Total time for fade should be", time_between*max_steps)
 
 		# set step sizes for each color
 		r_delta = r_steps/max_steps
+		# print("r delta", r_delta)
 		g_delta = g_steps/max_steps
+		# print("g delta", g_delta)
 		b_delta = b_steps/max_steps
+		# print("b delta", b_delta)
 
 		# Start the fade loop
 		i = 0
-		while i < max_steps:
+		# print("value of fade switch in fade function is", self.fade)
+		while i < max_steps and self.fade is True:
 			i += 1 # increment loop
 
 			# change color
@@ -253,13 +417,14 @@ class LightThread(threading.Thread):
 		while self.fade:
 			# choose colors
 			c1 = self.ORDERED_COLORS[i]
-			c2 = self.ORDERD_COLORS[i+1]
-
+			c2 = self.ORDERED_COLORS[(i+1)%(len(self.ORDERED_COLORS))]
+			print("Fading between", c1, "and", c2, "\nIndicies", i, ", ", (i+1)%(len(self.ORDERED_COLORS)))
+			
 			# fade between them
 			self.fade_between(c1, c2)
 
 			# increment loop
-			i = (i + 1)%(num_colors-2) # -2 so that we don't get error defining c2
+			i = (i + 1) % len(self.ORDERED_COLORS)
 
 
 
