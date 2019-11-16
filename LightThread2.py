@@ -302,7 +302,6 @@ class LightThread(threading.Thread):
 			self.fade = False
 
 		# Change color
-		vals = self.COLORS[color]
 		self.set_red(rgb[0], keep_jumping, keep_fading)
 		self.set_green(rgb[1], keep_jumping, keep_fading)
 		self.set_blue(rgb[2], keep_jumping, keep_fading)

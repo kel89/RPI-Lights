@@ -74,7 +74,7 @@ def light_controls():
 		vals = ast.literal_eval(cmd[6:])
 		
 		# Send to lights
-		lt.to_code(vals)
+		lt.to_rgb(vals)
 
 	
 			
