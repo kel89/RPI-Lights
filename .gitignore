@@ -1,4 +1,6 @@
 ##### Ignore #######
 
+.DS_Store
+
 # pycache folder
 __pycache__/
