@@ -12,6 +12,7 @@ import RPi.GPIO as GPIO
 import time
 import random
 import threading
+import ast
 
 from LightThread2 import * 
 
@@ -70,9 +71,10 @@ def light_controls():
 	
 	if cmd[0:6] == "Color:":
 		# Parse the color code
+		vals = ast.literal_eval(cmd[6:])
 		
 		# Send to lights
-		lt.to_code(r, g, b)
+		lt.to_code(vals)
 
 	
 			

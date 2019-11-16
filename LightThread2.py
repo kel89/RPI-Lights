@@ -286,7 +286,7 @@ class LightThread(threading.Thread):
 		self.set_green(vals[1], keep_jumping, keep_fading)
 		self.set_blue(vals[2], keep_jumping, keep_fading)
 		
-	def to_rgb(self, r, g, b, keep_jumping=False, keep_fading=False):
+	def to_rgb(self, rgb, keep_jumping=False, keep_fading=False):
 		"""
 		Changes colors to an rgb code
 		"""
@@ -303,9 +303,9 @@ class LightThread(threading.Thread):
 
 		# Change color
 		vals = self.COLORS[color]
-		self.set_red(r, keep_jumping, keep_fading)
-		self.set_green(g, keep_jumping, keep_fading)
-		self.set_blue(b, keep_jumping, keep_fading)
+		self.set_red(rgb[0], keep_jumping, keep_fading)
+		self.set_green(rgb[1], keep_jumping, keep_fading)
+		self.set_blue(rgb[2], keep_jumping, keep_fading)
 		
 	def set_speed(self, new_speed):
 		"""
