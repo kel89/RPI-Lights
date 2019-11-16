@@ -26,11 +26,13 @@
 	<!-- d3 v5 -->
 	<script src="https://d3js.org/d3.v5.min.js"></script>
 
-	<!-- d3 simple slider -->
-	<script src="https://unpkg.com/d3-simple-slider"></script>
+	<!-- NoUI Slider -->
+	<script src="{{url_for('static', filename='nouislider.min.js')}}"></script>
+	<link rel='stylesheet' href="{{url_for('static', filename='nouislider.min.css')}}">
 
 	<!-- My scripts -->
-	<script src='ColorWheel.js'></script>
+	<!-- <script src='ColorWheel.js'></script> -->
+	<script src="{{url_for('static', filename='ColorWheel.js')}}"></script>
 	<!-- <script src='ColorSliders.js'></script> -->
 	<!-- <script src='Slider.js'></script> -->
 
@@ -100,6 +102,31 @@
 		stroke-opacity: 0.5;
 	}
 
+	/* No UI Slider Style*/
+	#redSlider .noUi-connect{
+		background: red;
+	}
+
+	#greenSlider .noUi-connect{
+		background: green;
+	}
+
+	#blueSlider .noUi-connect{
+		background: blue;
+	}
+
+	#speedSlider .noUi-connect{
+		background: #ddd;
+	}
+
+	#brightnessSlider .noUi-connect{
+		background: #5680E9;
+	}
+
+	.cmdBtn{
+		height:50px;
+		font-size:1.5em;
+	}
 	</style>
 
 </head>
@@ -138,18 +165,75 @@
 	<div class='row' id='slidersDiv'>
 		<br>
 		<br>
-		<div class='row' id='redSlider' style='height:100px'></div>
+		<!-- <div class='col' id='redSlider' style='width:80%'></div>
 		<div class='row' id='greenSlider' style='height:100px'></div>
-		<div class='row' id='blueSlider' style='height:100px'></div>
+		<div class='row' id='blueSlider' style='height:100px'></div> -->
+		<div class='container-fluid' style='margin-bottom:20px'>
+			<div class='row mb-4'>
+				<div class='col m-4' id='redSlider' style='width:70%; margin-left:15%'></div>
+			</div>
+		</div>
+		<div class='container-fluid' style='margin-bottom:20px'>
+			<div class='row mb-4'>
+				<div class='col m-4' id='greenSlider' style='width:70%; margin-left:15%'></div>
+			</div>
+		</div>
+		<div class='container-fluid'>
+			<div class='row mb-4'>
+				<div class='col m-4' id='blueSlider' style='width:70%; margin-left:15%'></div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Speed and brightness -->
-	<div class='row' id='sliders2Div'>
+	<div class='row' style='margin-top:2em'>
+		<div class='col'>
+			<h3 style='margin-left:5%'>Speed Slider</h3>
+		</div>
+	</div>
+	<div class='row'>
+		<div class='col' id='speedSlider' style='width:70%; margin-left:15%'></div>
+	</div>
+
+	<div class='row' style='margin-top:2em'>
+		<div class='col'>
+			<h3 style='margin-left:5%'>Brightness Slider</h3>
+		</div>
+	</div>
+	<div class='row'>
+		<div class='col' id='brightnessSlider' style='width:70%; margin-left:15%'></div>
 	</div>
 
 	<!-- Buttons -->
-	<div class='row' id='buttonsDiv'>
+	<div class='row' id='buttonsDiv' style='margin-top:40px'>
+		<div class='col p-2' align='center'>
+			<div class='btn-group-vertical' style='width:75%;'>
+				<button class='btn btn-primary cmdBtn'
+					onclick='sendCommand("fade")'>
+					Fade
+				</button>
+
+				<button class='btn btn-success cmdBtn'
+					onclick='sendCommand("jump")'>
+					Jump
+				</button>
+
+				<button class='btn btn-info cmdBtn'
+					onclick='sendCommand("stop")'>
+					Stop
+				</button>
+
+				<button class='btn btn-danger cmdBtn'
+					onclick='masterOff()'>
+					Off
+				</button>
+
+			</div>
+		</div>
 	</div>
+
+	<br>
+	<br>
 
 </div>
 
@@ -157,10 +241,142 @@
 // Create the color wheel
 let cw = new ColorWheel({targetID:"colorGridDiv"});
 
-// let colorSliders = new ColorSliders({targetID:"slidersDiv", displayID: "centerColorCircle"})
-let redSlider = new Slider({targetId:'redSlider', fillColor:'red', widgetName:'redSlider', handleRadius:20, trackThickness:15});
-let greenSlider = new Slider({targetId:'greenSlider', fillColor:'green', widgetName:'greenSlider', handleRadius:20, trackThickness:15});
-let blueSlider = new Slider({targetId:'blueSlider', fillColor:'blue', widgetName:'blueSlider', handleRadius:20, trackThickness:15});
+// Color sliders------------------------------------
+// Red
+let redSlider = noUiSlider.create(document.getElementById("redSlider"),{
+	start: 0,
+	range: {'min':0, 'max':255},
+	connect: [true, false]
+});
+
+let greenSlider = noUiSlider.create(document.getElementById("greenSlider"),{
+	start: 0,
+	range: {'min':0, 'max':255},
+	connect: [true, false]
+});
+
+let blueSlider = noUiSlider.create(document.getElementById("blueSlider"),{
+	start: 0,
+	range: {'min':0, 'max':255},
+	connect: [true, false]
+});
+
+// Speed Slider ---------------
+let speedSlider = noUiSlider.create(document.getElementById("speedSlider"),{
+	start: 30,
+	range: {'min':0, 'max':1},
+	connect: [true, false]
+});
+
+// Brightness Slider
+let brightnessSlider = noUiSlider.create(document.getElementById("brightnessSlider"),{
+	start: 75,
+	range: {'min':0, 'max':1},
+	connect: [true, false]
+});
+
+
+
+
+// Attach slider events ----------------------------------------------
+redSlider.on('change', () =>{
+	let val = Math.floor(redSlider.get()*1);
+	let newColor = adjustRGB(masterColor, 'r', val);
+	masterUpdateColor(newColor, from='slider');
+});
+
+greenSlider.on('change', () =>{
+	let val = Math.floor(greenSlider.get()*1);
+	let newColor = adjustRGB(masterColor, 'g', val);
+	masterUpdateColor(newColor, from='slider');
+});
+
+blueSlider.on('change', () =>{
+	let val = Math.floor(blueSlider.get()*1);
+	let newColor = adjustRGB(masterColor, 'b', val);
+	masterUpdateColor(newColor, from='slider');
+});
+
+speedSlider.on('change', () => {
+	console.log("Speed set to " + speedSlider.get())
+	sendCommand("Speed:"+speedSlider.get())
+})
+
+brightnessSlider.on('change', () => {
+	console.log("Brightness set to:" + brightnessSlider.get());
+	sendCommand("Bright:"+brightnessSlider.get())
+})
+
+
+
+
+
+let masterColor = 'rgb(0,0,0)';
+function masterUpdateColor(color, from){
+	/*
+	Takes in a color and updates the visuals and sends the command to server
+	*/
+	console.log('js master update color to ' + color);
+	masterColor = color;
+
+	// Update the wheel
+	cw.setCenterColor(color)
+
+	// Update the sliders
+	if (from != 'slider'){
+		split = color.substr(4).split(")")[0].split(',');
+		redSlider.set(split[0]*1);
+		greenSlider.set(split[1]*1);
+		blueSlider.set(split[2]*1);
+	}
+
+	// send the command to server----- parse the color
+	split = rgb.substr(4).split(")")[0].split(',');
+	sendCommand(`Color:[${r},${g},${b}]`);
+}
+
+function masterOff(){
+	/*
+	Turns off the colors, sets the center to off and zeros the sliders
+	*/
+	// off center
+	cw.centerCircle.style('fill', 'none');
+	cw.centerText.style('opacity', 0);
+
+	[redSlider, greenSlider, blueSlider].forEach(function(s){
+		s.set(0);
+	});
+
+	// send off command
+	sendCommand('Color:[0,0,0]')
+}
+
+function adjustRGB(rgb, which, val){
+	/* Takes in an rgb string, along with a char indicating
+	which vale we want to swtich, and a new value, returns the
+	new rgb string
+	*/
+	// split into array
+	split = rgb.substr(4).split(")")[0].split(',');
+
+	// break into components
+	r = split[0];
+	g = split[1];
+	b = split[2];
+
+	// swap the one
+	if (which == 'r'){
+		r = val;
+	}
+	else if(which == 'g'){
+		g = val;
+	}
+	else{
+		b = val;
+	}
+
+	return 'rgb('+r+','+g+','+b+')'
+}
 
 
 </script>

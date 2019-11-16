@@ -95,11 +95,7 @@ ColorWheel.prototype.addWheel = function(){
 		.append('path')
 		.style('fill', d => d.data)
 		.on('click', function(d){
-			_this.centerCircle.style('fill', d.data);
-			_this.centerText.style('opacity', '1')
-						.style('fill', _this.getTextColor(d.data));
-
-			console.log("Send color " + d.data);
+			masterUpdateColor(d.data);
 		})
 
 	// Transition the slices
@@ -120,10 +116,11 @@ ColorWheel.prototype.addWheel = function(){
 		.attr('r', this.r*.47)
 		.style('fill', 'none')
 		.on('click', function(d){
-			d3.select(this).style('fill', 'none')
-			_this.centerText.style('opacity', '0');
+			masterOff();
+			// d3.select(this).style('fill', 'none')
+			// _this.centerText.style('opacity', '0');
 
-			console.log("Command off");
+			// console.log("Command off");
 		})
 
 	// Add center text
@@ -142,5 +139,16 @@ ColorWheel.prototype.getTextColor = function(backgroundColor){
 	let testVal = rgb[0]*.299 + rgb[1]*.587 + rgb[2]*.114;
 	return (testVal > 130 ? 'black' : 'white');
 }
+
+ColorWheel.prototype.setCenterColor = function(color){
+	/*
+	Sets the center color for the wheel
+	*/
+	this.centerCircle.style('fill', color);
+	this.centerText.style('opacity', '1')
+					.style('fill', this.getTextColor(color));
+}
+
+
 
  

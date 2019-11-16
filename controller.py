@@ -13,7 +13,7 @@ import time
 import random
 import threading
 
-from LightThread2 import * 
+# from LightThread2 import * 
 
 ########################################################################
 #								Setup
@@ -36,7 +36,7 @@ def get_cmd():
 
 
 # Create light thread
-lt = LightThread() # from LightThread2 (updated)
+# lt = LightThread() # from LightThread2 (updated)
 
 
 ########################################################################
@@ -53,20 +53,22 @@ def light_controls():
 		cmd = ""
 	
 	# Command for color change based on preset button
-	if cmd[0:6] == "Color:":
-		color = cmd[6:]
-		if color in lt.COLORS:
-			lt.to_color(color)
-		else:
-			print("ERROR: the color '" + color + "' is not defined")
+	# if cmd[0:6] == "Color:":
+	# 	color = cmd[6:]
+	# 	if color in lt.COLORS:
+	# 		lt.to_color(color)
+	# 	else:
+	# 		print("ERROR: the color '" + color + "' is not defined")
 			
-	# Command for slider color change
-	if cmd[0:2] == "R:":
-		lt.set_red(int(cmd[2:]))
-	elif cmd[0:2] == "G:":
-		lt.set_green(int(cmd[2:]))
-	elif cmd[0:2] == "B:":
-		 lt.set_blue(int(cmd[2:]))
+	# # Command for slider color change
+	# if cmd[0:2] == "R:":
+	# 	lt.set_red(int(cmd[2:]))
+	# elif cmd[0:2] == "G:":
+	# 	lt.set_green(int(cmd[2:]))
+	# elif cmd[0:2] == "B:":
+	# 	 lt.set_blue(int(cmd[2:]))
+
+	
 			
 	# Slider for dimming (brightness)
 	if cmd[0:7] == "Bright:":
@@ -90,7 +92,7 @@ def light_controls():
 		lt.set_speed(float(cmd[6:]))
 
 
-	return render_template("lightPage.html")
+	return render_template("lights.html")
 
 ########################################################################
 #								Main & Run
