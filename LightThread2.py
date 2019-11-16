@@ -258,9 +258,9 @@ class LightThread(threading.Thread):
 		self.dim = new_dim
 		
 		# update colors to reflect this:
-		self.set_red(self.rSet)
-		self.set_green(self.gSet)
-		self.set_blue(self.bSet)
+		self.set_red(self.rSet, keep_jumping=True, keep_fading=True)
+		self.set_green(self.gSet, keep_jumping=True, keep_fading=True)
+		self.set_blue(self.bSet, keep_jumping=True, keep_fading=True)
 
 	def to_color(self, color, keep_jumping=False, keep_fading=False):
 		"""
