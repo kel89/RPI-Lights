@@ -28,16 +28,16 @@ Gear:
 
 Now that you have all the harware you need to wire it up. The diagram below should explain what needs to be connected where:
 
-![Diagram](link)
+![Diagram](https://github.com/kel89/RPI-Lights/blob/master/RPi%20LED%20Circuit.png)
 
 ## Python Code
 Lets start by getting all the dependencies we need before jumping in and understanding a little bit about how the code works. Per a tutorial I think it is best to install the following:
 ```
 sudo apt-get install build-essential unzip wget
-``
-``
+```
+```
 wget http://abyz.me.uk/rpi/pigpio/pigpio.zip && unzip pigpio.zip && cd PIGPIO && sudo make install
-``
+```
 Honestly, not sure if I ended up using them, but can't hurt. 
 
 In terms of other packages, everything should already be there with your stsandard Python 3 distro. **This only works with Python 3**. Packages used:
